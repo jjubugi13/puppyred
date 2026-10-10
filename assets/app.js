@@ -3,7 +3,7 @@ import { orderedEntries, releaseURL, koreanDate, paginate } from './content.js';
 const select = id => document.getElementById(id);
 let noticeEntries = [];
 let noticePage = 1;
-const pageNames = { home: '퍼피레드', download: '다운로드', guide: '설치 및 이용 가이드', before: '이용 전 안내 사항', faq: '다운로드가 안 돼요!', patches: '패치 내역' };
+const pageNames = { home: '퍼피레드', download: '다운로드', guide: '설치 및 이용 가이드', before: '이용 전 안내 사항', faq: '설치·접속·실행 오류', patches: '패치 내역' };
 document.body.classList.add('enhanced');
 function showPage() {
   const hash = location.hash.slice(1);
@@ -143,7 +143,6 @@ async function loadConfig() {
       });
       select('download-link').textContent = '퍼피레드 다운로드 ↗';
       select('download-description').textContent = 'GitHub Releases에서 최신 배포 안내와 설치 파일을 확인해 주세요.';
-      select('download-help').textContent = '릴리스 페이지의 Assets에서 설치 파일을 선택해 주세요.';
     }
     return { sample: config.sample, ready: Boolean(url) };
   } catch {
