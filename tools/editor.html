@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>퍼피레드 공지·패치 파일 편집기</title>
+<style>
+*{box-sizing:border-box}body{max-width:850px;margin:25px auto;padding:0 16px;font:14px/1.7 'Malgun Gothic',sans-serif;color:#513743;background:#fff5f9}h1{font-size:22px}button,select,input,textarea{font:inherit}button{padding:8px 14px;border:1px solid #efb8cf;border-radius:5px;background:white;color:#923956;cursor:pointer}button:disabled{opacity:.5;cursor:default}.primary{background:#ff7cb0;color:white}nav{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}section{padding:20px;background:white;border:1px solid #f3d6e2;border-radius:8px}label{display:block;margin:14px 0}input:not([type=checkbox]),select,textarea{display:block;width:100%;padding:8px;border:1px solid #ddbfcf;border-radius:4px}textarea{min-height:330px}small{color:#846777}#message{white-space:pre-wrap}a{color:#a62e62}[hidden]{display:none!important}
+</style>
+<h1>공지·패치 파일 편집기</h1>
+<p>여기서 수정해도 홈페이지는 바로 바뀌지 않아요. <strong>파일로 저장 → GitHub의 data 폴더에 올리기</strong>까지 해야 반영됩니다. 비밀번호나 로그인은 필요 없어요.</p>
+<nav><button id="notices">홈페이지 공지 불러오기</button><button id="patches">홈페이지 패치 불러오기</button><button id="import">내 PC의 JSON 파일 열기</button></nav>
+<input id="file" type="file" accept=".json,application/json" hidden>
+<p id="message" role="status">먼저 수정할 목록을 불러오세요. 내려받은 파일로 이 편집기를 열었다면 ‘내 PC의 JSON 파일 열기’를 사용하세요.</p>
+<section id="editor" hidden>
+<label>수정할 글<select id="entries"></select></label>
+<nav><button id="new">새 글 추가</button><button id="remove">선택한 글 삭제</button></nav>
+<label>제목<input id="title"></label>
+<label>게시 날짜·시간 (한국 시간)<input id="date" type="datetime-local" step="1"></label>
+<label id="category-label">분류<select id="category"><option>공지</option><option>이용 가이드</option><option>점검</option></select></label>
+<label id="pin-label">상단 고정<select id="pin"><option value="0">고정하지 않기</option><option value="1">첫 번째에 고정</option><option value="2">두 번째에 고정</option></select></label>
+<label id="version-label" hidden>버전 또는 날짜<input id="version"></label>
+<label>본문<textarea id="body"></textarea></label>
+<small>줄바꿈은 그대로 표시돼요. 사진을 유지하려면 ![설명](./assets/notices/파일이름.png) 줄을 지우지 마세요. 패치 글은 빈 줄로 문단을 구분해 주세요.</small>
+<label><input id="draft" type="checkbox"> 비공개 초안으로 보관 (홈페이지에 표시하지 않기)</label>
+<nav><button class="primary" id="save">수정한 JSON 파일 저장</button></nav>
+<p>저장한 뒤 <a href="https://github.com/jjubugi13/puppyred/tree/main/data" target="_blank" rel="noopener noreferrer">GitHub data 폴더</a>에서 <strong>Add file → Upload files</strong>로 파일을 올리고 <strong>Commit changes</strong>를 누르세요. 파일 이름은 notices.json 또는 patches.json 그대로 사용하세요.</p>
+</section>
+<script>
+const $=id=>document.getElementById(id);let rows=[],kind='notices',selected=0,dirty=false;
+function message(text){$('message').textContent=text;}
+function checkRows(value){
+ if(!Array.isArray(value)||value.some(e=>!e||typeof e.title!=='string'||typeof e.id!=='string'||!Number.isFinite(Date.parse(e.publishedAt))))throw Error('공지 또는 패치 JSON 파일을 선택해 주세요.');
+ if(value.some(e=>kind==='notices'?typeof e.body!=='string':!Array.isArray(e.changes)))throw Error('목록 형식이 맞지 않아요.');
+ if(new Set(value.map(e=>e.id)).size!==value.length)throw Error('중복된 글 ID가 있어요.');
+}
+function commit(){
+ const e=rows[selected];if(!e)return;
+ if(!$('date').value||!Number.isFinite(Date.parse($('date').value+'+09:00')))throw Error('게시 날짜와 시간을 입력해 주세요.');
+ e.title=$('title').value;e.publishedAt=$('date').value.length===16?$('date').value+':00+09:00':$('date').value+'+09:00';
+ e.draft=$('draft').checked;e.sample=false;
+ if(kind==='notices'){e.body=$('body').value;e.category=$('category').value;const pin=Number($('pin').value);if(pin)rows.forEach(other=>{if(other!==e&&other.pin===pin)other.pin=0;});e.pin=pin;}
+ else{e.changes=$('body').value.split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean);e.version=$('version').value;}
+}
+function render(){
+ $('editor').hidden=false;$('entries').replaceChildren();
+ rows.forEach((e,i)=>{const o=document.createElement('option');o.value=i;o.textContent=e.title||'(새 글)';$('entries').append(o);});
+ $('entries').value=selected;const e=rows[selected];
+ for(const id of ['title','date','body','draft','version','category','pin','remove'])$(id).disabled=!e;
+ $('title').value=e?.title||'';
+ $('date').value=e?new Date(Date.parse(e.publishedAt)+9*3600000).toISOString().slice(0,19):'';
+ $('body').value=e?(kind==='notices'?e.body:e.changes.join('\n\n')):'';
+ $('draft').checked=Boolean(e?.draft);$('version').value=e?.version||'';$('category').value=e?.category||'공지';
+ $('category-label').hidden=kind!=='notices';$('version-label').hidden=kind!=='patches';
+ $('pin-label').hidden=kind!=='notices';$('pin').value=String(e?.pin||0);
+}
+function accept(value,type){const oldKind=kind;kind=type;try{checkRows(value);}catch(e){kind=oldKind;throw e;}rows=value;selected=0;dirty=false;render();message((kind==='notices'?'공지':'패치')+' '+rows.length+'개를 불러왔어요. 글을 선택해 수정해 주세요.');}
+function discard(){return !dirty||confirm('저장하지 않은 수정이 있어요. 버리고 다른 파일을 열까요?');}
+for(const type of ['notices','patches'])$(type).onclick=async()=>{
+ if(!discard())return;
+ if(location.protocol==='file:'){message('내 PC에서 연 편집기예요. ‘내 PC의 JSON 파일 열기’로 data/'+type+'.json을 선택해 주세요.');return;}
+ try{const response=await fetch('../data/'+type+'.json',{cache:'no-store'});if(!response.ok)throw Error('파일을 불러오지 못했어요.');accept(await response.json(),type);}catch(e){message(e.message);}
+};
+$('import').onclick=()=>{if(discard())$('file').click();};
+$('file').onchange=async()=>{const file=$('file').files[0];if(!file)return;try{const value=JSON.parse(await file.text());const type=file.name.startsWith('patches')||value[0]?.changes?'patches':'notices';accept(value,type);}catch(e){message('불러오기 실패: '+e.message);}finally{$('file').value='';}};
+$('entries').onchange=()=>{commit();selected=Number($('entries').value);render();};
+for(const id of ['title','date','body','draft','version','category','pin'])$(id).addEventListener('input',()=>{dirty=true;});
+$('new').onclick=()=>{commit();const now=new Date(Date.now()+9*3600000).toISOString().slice(0,19)+'+09:00';const e={id:'post-'+crypto.randomUUID(),title:'새 글',publishedAt:now,sample:false,draft:false};if(kind==='notices'){e.body='';e.category='공지';}else{e.changes=[];e.version=now.slice(0,10);}rows.push(e);selected=rows.length-1;dirty=true;render();};
+$('remove').onclick=()=>{if(!rows[selected]||!confirm('선택한 글을 이 목록에서 삭제할까요? GitHub에 올리기 전에는 홈페이지에 영향이 없어요.'))return;rows.splice(selected,1);selected=Math.max(0,selected-1);dirty=true;render();};
+$('save').onclick=()=>{
+ try{commit();checkRows(rows);if(rows.some(e=>!e.title.trim()||(kind==='notices'?!e.body.trim():!e.changes.length)))throw Error('모든 글의 제목과 본문을 입력해 주세요.');
+ const url=URL.createObjectURL(new Blob([JSON.stringify(rows,null,2)+'\n'],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=kind+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);dirty=false;message(kind+'.json 저장을 요청했어요. 파일을 GitHub data 폴더에 올려야 홈페이지가 바뀝니다. 파일명에 (1)이 붙었다면 지워 주세요.');
+ }catch(e){message(e.message);}
+};
+window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
+for(const [id,event] of [['new','onclick'],['entries','onchange']]){const action=$(id)[event];$(id)[event]=()=>{try{action();}catch(e){$('entries').value=selected;message(e.message);}};}
+</script></html>

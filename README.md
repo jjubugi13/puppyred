@@ -1,133 +1,104 @@
-# 퍼피레드 비공식 복원 프로젝트 홈페이지
+# 퍼피레드 홈페이지 관리 방법
 
-빌드 없이 GitHub Pages에 올리는 정적 홈페이지입니다. HTML, CSS, JavaScript, JSON과 아이콘만 사용합니다. 서버 프로그램·데이터베이스·유료 서비스·외부 폰트·외부 CDN·GitHub API·방문자 로그인은 필요하지 않습니다.
+홈페이지: https://jjubugi13.github.io/puppyred/
 
-디자인은 사용자가 지정한 게임 공지창을 기준으로 분홍색 `#FF7CB0` 프레임, 흰색 패널, 작은 글씨와 점선 목록을 사용합니다. 모바일 첫 화면은 공지 → 다운로드 → 안내 메뉴 4개 순서입니다. 첫 화면 아래에는 이용 전 안내 → 설치 가이드 → 다운로드 → 다운로드가 안 돼요! → 패치 내역이 한 페이지에 이어집니다. 큰 장식 그림이나 홍보 문구는 없습니다. PC는 상단 메뉴, 모바일은 메뉴 버튼과 바로가기로 각 안내 화면을 엽니다.
+저장소: https://github.com/jjubugi13/puppyred
 
-**기본 상태는 샘플 사이트입니다.** 공지와 패치는 모두 예시로 표시되며 실제 다운로드는 비활성화되어 있습니다. 홈페이지가 준비되었다는 사실은 게임 배포나 기능 검증 완료를 뜻하지 않습니다.
+홈페이지 방문자는 읽기만 가능합니다. 편집기는 내 PC로 JSON 파일을 저장하는 도구이며, 저장소 주인이 GitHub에 올려야 홈페이지가 바뀝니다. 별도 서버·DB·유료 서비스가 필요하지 않습니다.
 
-## 파일 구성
+## 이번 수정본 올리기
 
-```text
-puppyred/
-  index.html             홈페이지 (6개 안내 영역, 상단 최신 공지)
-  .nojekyll              Jekyll 처리 없이 정적 파일 게시
-  .gitignore
-  assets/
-    styles.css           PC·모바일 반응형 디자인
-    app.js               JSON 읽기와 화면 표시
-    content.js           정렬·날짜·Releases 주소 검증
-    puppyred.ico         기존 게임 아이콘을 복사한 브라우저 아이콘
-    help/                사용자가 제공한 오류 안내 이미지 3개
-  data/
-    site.json            다운로드 설정
-    notices.json         공지사항
-    patches.json         날짜별 패치 내역
-  tools/
-    check.mjs            선택 사항: 로컬 콘텐츠·링크 검사
-  package.json           선택적 Node 검사 설정 (설치할 의존성 없음)
-  README.md
-```
+1. 받은 홈페이지 ZIP을 압축 해제합니다. ZIP 자체를 GitHub에 올리는 것이 아닙니다.
+2. index.html, assets, data, tools, README.md가 보이는 폴더를 엽니다.
+3. 저장소 첫 화면에서 **Add file → Upload files**를 누릅니다. 좁은 화면에서는 Add file 대신 **+** 버튼일 수 있습니다.
+4. 2번 폴더 **안의 내용**을 업로드 영역에 드래그합니다. 바깥 폴더 자체를 올리면 경로가 한 겹 더 생기므로 주의하세요. index.html이 저장소 첫 화면에 있어야 합니다.
+5. 업로드 완료 후 설명에 ‘홈페이지 공지와 안내 수정’을 적고 **Commit directly to the main branch → Commit changes**를 누릅니다.
+6. **Actions**에서 Pages 배포가 완료되면 홈페이지에서 **Ctrl + F5**로 새로고침합니다. 이미 Pages를 켰다면 Settings는 다시 바꿀 필요가 없습니다.
 
-## GitHub Pages 무료 배포
+## 공지와 패치를 가장 쉽게 수정하는 방법
 
-1. GitHub에서 **Public** 저장소를 만들고 이름을 **`puppyred`**로 지정합니다. GitHub Free에서 Pages를 사용하려면 공개 저장소를 사용합니다.
-2. **이 폴더 안의 파일과 폴더만** 저장소의 `main` 브랜치 최상위에 업로드합니다. 저장소를 열자마자 `index.html`, `assets`, `data`가 보여야 합니다. `puppyred` 폴더 자체를 한 겹 더 넣지 마세요. 게임 작업 공간 전체, 계정 데이터, 키, 런타임 파일을 업로드하지 마세요. `.nojekyll`도 포함합니다.
-3. 저장소 **Settings → Pages → Build and deployment**에서 **Source: Deploy from a branch**를 선택합니다.
-4. **Branch: main**, 폴더 **/ (root)**를 선택하고 **Save**를 누릅니다.
-5. GitHub의 Pages 배포가 성공하면 Settings → Pages의 실제 사이트 주소를 엽니다. 일반적인 프로젝트 주소 형식은 `https://YOUR-USERNAME.github.io/puppyred/`입니다. 이 주소는 **형식 예시**이므로 `YOUR-USERNAME`을 실제 GitHub 계정명으로 바꿔야 합니다.
-6. PC와 휴대폰에서 공지 펼치기, 메뉴 이동, FAQ 펼치기, 패치 목록과 다운로드 상태를 확인합니다. 파일을 수정하고 커밋하면 다음 Pages 배포에 반영됩니다. 즉시 바뀌지 않으면 배포 상태를 확인하고 새로고침하세요.
+이 수정본을 업로드한 뒤 아래 주소를 즐겨찾기하세요.
 
-이 방식에는 별도 빌드 명령, npm 설치, 사용자 작성 Actions 워크플로가 필요하지 않습니다. GitHub Pages의 게시 처리는 GitHub가 수행합니다. 사이트 소스 공개와 방문자의 수정 권한은 별개입니다. 사이트에는 쓰기 기능이 없으며 저장소의 쓰기 권한을 가진 운영자만 게시 파일을 수정할 수 있습니다.
+**https://jjubugi13.github.io/puppyred/tools/editor.html**
 
-공식 안내: [게시 소스 설정](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site), [Pages 사이트 만들기](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site).
+1. 편집기에서 **홈페이지 공지 불러오기** 또는 **홈페이지 패치 불러오기**를 누릅니다. 항상 최신 목록을 먼저 불러오세요.
+2. **수정할 글**에서 글을 선택합니다.
+3. 제목·한국 시간 기준 게시 날짜·본문을 바꿉니다. 추가는 **새 글 추가**, 삭제는 **선택한 글 삭제**입니다.
+4. **수정한 JSON 파일 저장**을 누릅니다. 공지는 notices.json, 패치는 patches.json입니다. 파일명에 (1)이 붙었다면 지워 주세요.
+5. [GitHub data 폴더](https://github.com/jjubugi13/puppyred/tree/main/data)를 엽니다.
+6. **Add file → Upload files**에서 방금 저장한 JSON 파일 하나를 올립니다.
+7. **Commit changes**로 저장하고 Pages 배포 완료 후 홈페이지를 새로고침합니다.
 
-## 실제 다운로드 연결
+편집기에서 저장만 하면 홈페이지는 바뀌지 않습니다. 반드시 **data 폴더에 같은 이름으로 업로드**해야 합니다. JSON 하나에는 목록 전체가 들어 있습니다. 오래된 파일을 올리면 새 글이 사라질 수 있으므로 항상 최신 목록으로 작업하세요.
 
-1. 게임 배포에 사용할 파일을 준비하고 `puppyred` 저장소의 **Releases → Draft a new release**에서 태그와 설명을 작성합니다.
-2. 설치 파일을 릴리스 첨부 파일로 업로드하고, 지원 OS·설치 방법·파일 이름을 안내합니다. GitHub가 자동 제공하는 `Source code` 압축 파일은 이 홈페이지의 소스이며 게임 설치 파일이 아닙니다.
-3. 릴리스를 실제 공개합니다. `/releases/latest`는 최신 공개 릴리스용입니다. 초안은 방문자가 볼 수 없으며 시험판은 고정 `/releases/tag/태그` 주소를 사용할 수 있습니다.
-4. `data/site.json`을 다음 형태로 바꿉니다. 아래 URL은 **실제 다운로드가 아닌 형식 예시**입니다. 반드시 계정명을 바꾸세요.
+내 PC에서는 tools/editor.html을 더블클릭하고 **내 PC의 JSON 파일 열기**로 data/notices.json 또는 data/patches.json을 선택합니다.
+
+### 사진
+
+본문의 `![설명](./assets/notices/사진이름.png)` 줄이 사진입니다. 기존 사진을 유지하려면 그 줄을 남겨두세요. 새 사진은 GitHub의 assets/notices 폴더에 먼저 올리고 같은 형식으로 적습니다. 파일명은 guide-1.png처럼 영문·숫자·하이픈을 사용하고 대소문자를 맞춰 주세요.
+
+### 날짜·공개 여부
+
+- 설치 안내는 1번째, 이용 전 읽어주세요는 2번째에 상단 고정됩니다. 새 글을 등록해도 두 글은 내려가지 않습니다. 편집기의 **상단 고정**에서 순서를 바꿀 수 있습니다. 같은 고정 위치를 다른 글에 지정하면 기존 글의 해당 고정은 해제됩니다.
+- 나머지 공지는 게시 날짜가 최신인 순서로 자동 정렬됩니다. 한 페이지에 5개씩 표시하며 6개부터 다음 페이지가 생깁니다.
+- 같은 날짜·시간의 글은 고유 ID 순서로 정렬됩니다. 순서를 조정하려면 시간을 다르게 적으세요.
+- ‘비공개 초안’과 미래 날짜의 글은 현재 목록에 나타나지 않습니다. 예약 시각이 지난 뒤 페이지를 불러오면 표시됩니다.
+- 게임 공지와 홈페이지 공지는 자동 연동되지 않습니다. 한쪽을 바꾸면 다른 쪽도 따로 수정해야 합니다.
+
+## 이용 안내·설치 가이드·FAQ의 문장 바꾸기
+
+1. [index.html 편집](https://github.com/jjubugi13/puppyred/edit/main/index.html)을 엽니다.
+2. 편집칸을 클릭하고 **Ctrl + F**로 바꿀 문장을 찾습니다. 예: ‘다른 서비스와 같은 비밀번호’.
+3. 문장만 바꿉니다. `<p>`, `</p>`, `<h3>` 같은 괄호 부분은 남겨두세요.
+4. **Commit changes → Commit directly to the main branch → Commit changes**로 저장합니다.
+
+예: `<p>다른 서비스와 같은 비밀번호를 사용하지 마세요.</p>`에서 가운데 한글 문장만 수정하면 됩니다.
+
+다운로드 상자의 ‘배포 정보 확인’ 등 상태에 따라 달라지는 문구는 assets/app.js에서 검색해 수정합니다. 색상·크기·간격은 assets/styles.css입니다.
+
+FAQ 사진은 assets/help 폴더에 같은 이름으로 새 사진을 올리면 교체됩니다.
+
+| 사진 | 파일명 |
+| --- | --- |
+| 구성요소 등록 오류 | component-registration.png |
+| 중복 실행 오류 | duplicate-launch.png |
+| 서버 연결 오류 | server-unavailable.png |
+
+## 다운로드 버튼 주소
+
+[data/site.json 편집](https://github.com/jjubugi13/puppyred/edit/main/data/site.json)에서 관리합니다.
 
 ```json
 {
   "sample": false,
   "downloadEnabled": true,
-  "releaseUrl": "https://github.com/YOUR-USERNAME/puppyred/releases/latest"
+  "releaseUrl": "https://github.com/jjubugi13/puppyred/releases/latest"
 }
 ```
 
-`sample: false`, `downloadEnabled: true`, 유효한 실제 Releases 주소가 모두 있어야 다운로드가 활성화됩니다. 예시 계정명은 코드에서 거부합니다. HTTPS의 `github.com/<계정명>/puppyred/releases`, `/releases/latest`, `/releases/tag/<태그>`만 허용합니다. 파일 직접 링크 대신 릴리스 안내 페이지를 열어 버전과 설치 방법을 함께 확인하도록 했습니다. URL 형식 검사는 릴리스 존재 여부까지 확인하지 않으므로 운영자가 로그아웃 상태에서도 직접 열어 확인하세요.
+설치 EXE는 **Releases**에 첨부합니다. 홈페이지 파일 업로드 영역에는 올리지 마세요. 위 주소는 최신 정식 릴리스로 연결됩니다. 방문자는 **Assets → PuppyRedSetup.exe**로 받습니다. 다운로드를 잠시 막으려면 downloadEnabled를 false로 바꿉니다.
 
-배포 중단은 `downloadEnabled`를 `false`로 바꾸면 됩니다. 실제 주소를 모르는 상태에서는 `releaseUrl: null`을 유지하세요. 게임 설치 파일을 이 홈페이지 폴더에 넣을 필요는 없습니다.
+## 실수했을 때
 
-공식 안내: [최신 릴리스 연결](https://docs.github.com/en/repositories/releasing-projects-on-github/linking-to-releases).
+- 저장 전이면 **Cancel changes**로 취소합니다.
+- 저장 후라면 파일의 **History**에서 정상인 이전 내용을 확인하고 복사해 편집 화면에 붙여 넣은 뒤 Commit changes로 다시 저장합니다.
+- 화면이 그대로면 **Actions**에서 Pages 배포 완료 여부를 보고 Ctrl + F5를 누릅니다.
+- 공지가 안 보이면 초안 체크와 게시 날짜를 확인합니다. JSON을 직접 수정했다면 쉼표·따옴표 오류도 확인합니다.
 
-## 공지 관리 — `data/notices.json`
+## 처음 GitHub Pages를 켜는 방법
 
-GitHub 파일 화면의 연필(Edit) 버튼을 눌러 JSON 배열을 수정하고 커밋합니다. 아래 역시 작성 형식 예시이며, 실제 소식을 확인한 뒤 내용·날짜·샘플 상태를 수정하세요.
+1. 공개 저장소 이름을 puppyred로 만듭니다.
+2. index.html과 폴더들을 저장소 루트에 올립니다.
+3. **Settings → Pages → Build and deployment → Source: Deploy from a branch**를 선택합니다.
+4. **Branch: main**, 폴더 **/(root)**를 선택하고 **Save**를 누릅니다.
+5. 배포 완료 후 https://계정명.github.io/puppyred/ 로 접속합니다.
 
-```json
-{
-  "id": "notice-20261010",
-  "title": "여기에 확인된 실제 공지 제목을 입력하세요",
-  "publishedAt": "2026-10-10T12:00:00+09:00",
-  "sample": true,
-  "draft": true,
-  "body": "여기에 실제 공지 본문을 입력하세요.\n줄바꿈은 이렇게 표시합니다."
-}
-```
+페이지·사진·JSON·스크립트가 상대 경로이므로 /puppyred/에서도 동작합니다. 빌드나 패키지 설치가 필요하지 않습니다.
 
-- `id`: 목록 안에서 고유한 영문 소문자·숫자·하이픈 조합입니다. 공지 직접 링크에 사용하므로 게시 후 유지하세요.
-- `publishedAt`: `YYYY-MM-DDTHH:mm:ss+09:00` 형태의 한국 시간입니다. 날짜가 최신인 순으로 자동 정렬되며, 가장 최근 공지가 페이지 최상단에 표시됩니다. 날짜가 같으면 ID 순입니다.
-- `sample`: `true`이면 개별 공지에 샘플 표시가 붙습니다. 실제 소식으로 교체한 뒤에만 `false`로 바꾸세요.
-- `draft`: `true`이면 화면에서 숨깁니다. 미래 날짜도 방문자 기기 시각 기준으로 숨깁니다. **공개 저장소의 JSON 자체는 누구나 볼 수 있으므로 비밀 초안 용도가 아닙니다.** 예약 공개는 서버 스케줄러가 아니라 페이지를 불러올 때 판단하며, 날짜가 지나면 새로고침해야 표시됩니다.
-- `body`: 일반 텍스트입니다. HTML과 Markdown은 실행·변환하지 않으며 글자 그대로 표시합니다.
+## 옮긴 게임 공지의 출처
 
-샘플 공지는 삭제하거나 실제 내용으로 교체합니다. 등록할 공지가 없으면 `[]`로 저장하면 됩니다. 배열의 항목 사이에는 쉼표가 필요하며 마지막 항목 뒤에는 쉼표를 붙이지 않습니다. 잘못된 JSON이나 잘못된 항목이 있으면 해당 영역에 불러오기 실패 안내가 나옵니다. 다른 영역과 기본 설치 안내·FAQ는 계속 동작합니다.
+게임 화면과 제목이 일치하는 보존 서버 백업에서 일반 안내·가이드 4개, 패치 글 4개와 사진 13개를 옮겼습니다. 상단에는 홈페이지 설치 안내 1개를 추가했습니다. 이용 전 안내의 예전 비공개 배포 문구와 문의 경로만 현재 홈페이지·오픈채팅에 맞췄습니다. 패치 글은 당시 게시 기록이며 현재 모든 현상이 그대로 남아 있다는 의미가 아닙니다.
 
-## 패치 내역 관리 — `data/patches.json`
+## 개발 확인
 
-날짜별 변경 내용은 다음 형식으로 배열에 추가합니다. 샘플을 실제 패치로 바꿀 때 `sample`을 `false`, 게시할 때 `draft`를 `false`로 바꿉니다. 완료·적용이 확인되지 않은 변경을 적용 완료라고 적지 마세요.
-
-```json
-{
-  "id": "patch-example",
-  "title": "패치 제목 작성 예시",
-  "version": "실제 배포 버전으로 교체",
-  "publishedAt": "2026-10-10T12:00:00+09:00",
-  "sample": true,
-  "draft": true,
-  "changes": [
-    "확인된 변경 사항을 적습니다.",
-    "알려진 제한이나 추가 확인이 필요한 항목을 구분합니다."
-  ]
-}
-```
-
-공지와 같은 날짜 정렬·샘플·초안 규칙을 사용합니다. `changes`는 문자열 배열이며 각 문자열은 한 줄의 항목으로 표시됩니다. 기록이 없으면 `[]`로 저장하세요. 문의 경로는 사용자가 제공한 [오픈채팅](https://open.kakao.com/o/gOSqnZOi)으로 연결했습니다. FAQ의 오류 설명은 운영자가 제공한 각 오류 사례에 맞춰 작성했습니다.
-
-## 경로와 로컬 미리보기
-
-모든 CSS·JS·아이콘은 `./assets/…` 상대 경로입니다. JSON은 `import.meta.url`을 기준으로 찾습니다. 따라서 도메인 루트와 `/puppyred/` 둘 다 동작합니다. 메뉴는 `#home`, `#download`, `#guide`, `#before`, `#faq`, `#patches` 해시를 사용해 한 페이지 안의 해당 안내 위치로 이동합니다. 직접 링크·새로고침·브라우저 뒤로 가기가 동작하며 서버 라우팅은 필요하지 않습니다. JavaScript를 끄면 정적인 설치 안내와 FAQ는 한 페이지에 이어서 표시됩니다. 파일명은 대소문자를 정확히 맞추고 `/assets/...` 같은 도메인 루트 경로로 바꾸지 마세요.
-
-JSON을 `fetch`로 읽으므로 `index.html`을 더블클릭하는 `file://` 미리보기는 지원하지 않습니다. Python이 있는 개발 PC에서만 선택적으로 다음을 실행합니다. 이것은 **로컬 확인용**이며 실제 배포에 별도 서버가 필요하다는 뜻이 아닙니다.
-
-```powershell
-# 이 README가 있는 puppyred 폴더에서 실행
-python -m http.server 8765 --bind 127.0.0.1
-```
-
-브라우저에서 `http://127.0.0.1:8765/`를 열고, 종료할 때 터미널에서 `Ctrl+C`를 누릅니다. `/puppyred/` 경로를 시험하려면 다른 파일이 없는 임시 폴더 안에 이 홈페이지 폴더만 복사한 후, 그 임시 폴더에서 서버를 실행하여 `http://127.0.0.1:8765/puppyred/`를 엽니다. 게임 작업 공간 전체를 웹서버로 노출하지 마세요.
-
-Node.js가 있다면 폴더에서 `node tools/check.mjs`로 JSON 구조, 샘플 보호, 정렬, 상대 파일 참조를 검사할 수 있습니다. 이 검사는 실제 GitHub 배포나 설치 파일의 안전성·게임 실행을 검증하지 않습니다.
-
-## 공개 전 확인
-
-- 샘플 공지와 패치를 삭제하거나 실제 정보로 교체했는지 확인합니다.
-- `data/site.json`에 실제 공개 릴리스 주소를 넣고 다운로드 링크를 직접 확인합니다.
-- 지원 환경과 설치 안내, 실제 문의 경로를 배포 내용에 맞춥니다.
-- 개인정보, 비밀번호, 키, 계정 DB와 비공개 파일을 저장소에 넣지 않습니다.
-- PC·모바일에서 글자 잘림, FAQ, 최신 공지, 이미지, 키보드 탐색을 확인합니다.
-
-홈페이지에는 폼·댓글·회원가입·관리자 페이지·방문자 저장 기능이 없습니다. 사용자가 열고 닫는 FAQ와 공지는 해당 브라우저 화면에만 반영됩니다. 게임 HTML은 색상·디자인 확인 목적으로만 읽었으며 게임 코드와 계정 데이터는 수정하지 않았습니다. 브라우저 아이콘은 `work/assets/icons/original/puppyred_install.ico`를 홈페이지 폴더로 복사했습니다.
+`node tools/check.mjs`로 JSON, 날짜 정렬, 페이지 나누기, 주소 제한, 사진 경로 등을 확인합니다. JavaScript가 꺼져 있으면 고정 안내만 읽을 수 있고 공지·패치·다운로드 설정은 불러올 수 없습니다.

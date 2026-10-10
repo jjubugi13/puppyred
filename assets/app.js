@@ -1,6 +1,8 @@
-import { orderedEntries, releaseURL, koreanDate } from './content.js';
+import { orderedEntries, releaseURL, koreanDate, paginate } from './content.js';
 
 const select = id => document.getElementById(id);
+let noticeEntries = [];
+let noticePage = 1;
 const pageNames = { home: '퍼피레드', download: '다운로드', guide: '설치 및 이용 가이드', before: '이용 전 안내 사항', faq: '다운로드가 안 돼요!', patches: '패치 내역' };
 document.body.classList.add('enhanced');
 function showPage() {
@@ -44,31 +46,60 @@ async function readJSON(name) {
   } finally { clearTimeout(timeout); }
 }
 
+function appendBody(container, text) {
+  for (const part of text.split(/(!\[[^\]\n]*\]\(\.\/assets\/notices\/[a-zA-Z0-9_.-]+\))/g)) {
+    const match = part.match(/^!\[([^\]]*)\]\((\.\/assets\/notices\/[a-zA-Z0-9_.-]+)\)$/);
+    if (match) {
+      const img = element('img', 'notice-image');
+      img.src = match[2]; img.alt = match[1]; img.loading = 'lazy';
+      container.append(img);
+    } else if (part.trim()) container.append(element('p', '', part.trim()));
+  }
+}
+
+function renderNoticePage(page) {
+  const result = paginate(noticeEntries, page);
+  noticePage = result.page;
+  const list = select('notice-list'); list.replaceChildren();
+  if (!result.items.length) state(list, '아직 등록된 공지가 없어요.');
+  result.items.forEach(entry => {
+    const detail = element('details'); detail.id = `notice-${entry.id}`;
+    const summary = element('summary');
+    summary.append(element('span', 'pill', entry.sample ? '샘플' : (entry.pin ? '고정' : entry.category || '공지')), element('span', 'notice-title', entry.title), dateNode(entry.publishedAt));
+    const body = element('div', 'detail-body');
+    if (entry.sample) body.append(element('p', '', '작성 예시입니다. 실제 공지나 배포 일정이 아니에요.'));
+    appendBody(body, entry.body);
+    if (['#guide', '#before', '#download', '#faq'].includes(entry.link)) {
+      const link = element('a', 'text-link', entry.linkLabel || '안내 보기'); link.href = entry.link; body.append(link);
+    }
+    detail.append(summary, body); list.append(detail);
+  });
+  const navigation = select('notice-pagination'); navigation.replaceChildren();
+  navigation.hidden = result.pages <= 1;
+  if (result.pages <= 1) return;
+  const button = (label, page, disabled, current = false) => {
+    const node = element('button', '', label); node.type = 'button'; node.disabled = disabled;
+    if (current) node.setAttribute('aria-current', 'page');
+    node.addEventListener('click', () => {
+      renderNoticePage(page);
+      navigation.querySelector('[aria-current="page"]').focus({ preventScroll: true });
+      list.scrollIntoView({ block: 'start' });
+    });
+    navigation.append(node);
+  };
+  button('이전', result.page - 1, result.page === 1);
+  for (let page = 1; page <= result.pages; page++) button(String(page), page, false, page === result.page);
+  button('다음', result.page + 1, result.page === result.pages);
+}
+
 async function loadNotices() {
   try {
-    const entries = orderedEntries(await readJSON('notices'), 'notice');
-    const list = select('notice-list');
-    list.replaceChildren();
-    if (!entries.length) { state(list, '아직 등록된 공지가 없어요. 새 소식을 기다려 주세요.'); select('latest-notice').textContent = '아직 등록된 공지가 없어요.'; return false; }
-    entries.forEach(entry => {
-      const detail = element('details');
-      detail.id = `notice-${entry.id}`;
-      const summary = element('summary');
-      summary.append(element('span', 'pill', entry.sample ? '샘플' : '공지'), element('span', 'notice-title', entry.title), dateNode(entry.publishedAt));
-      const body = element('div', 'detail-body');
-      if (entry.sample) body.append(element('p', '', '작성 예시입니다. 실제 공지나 배포 일정이 아니에요.'));
-      body.append(element('p', '', entry.body));
-      detail.append(summary, body);
-      list.append(detail);
-    });
-    const latest = entries[0];
-    const top = select('latest-notice');
-    top.textContent = `${latest.sample ? '[샘플] ' : ''}${latest.title}`;
-    top.href = `#notice-${latest.id}`;
-    return entries.some(entry => entry.sample);
+    noticeEntries = orderedEntries(await readJSON('notices'), 'notice');
+    renderNoticePage(1);
+    return noticeEntries.some(entry => entry.sample);
   } catch {
     state(select('notice-list'), '공지사항을 불러오지 못했어요. 잠시 후 페이지를 새로고침해 주세요.');
-    select('latest-notice').textContent = '공지사항을 불러오지 못했어요. 잠시 후 다시 확인해 주세요.';
+    select('notice-pagination').replaceChildren();
     return false;
   }
 }
@@ -109,7 +140,6 @@ async function loadConfig() {
         link.removeAttribute('aria-disabled');
       });
       select('download-link').textContent = '퍼피레드 다운로드 ↗';
-      document.querySelector('[data-download-caption]').textContent = 'GitHub Releases에서 설치 파일 받기';
       select('download-description').textContent = 'GitHub Releases에서 최신 배포 안내와 설치 파일을 확인해 주세요.';
       select('download-help').textContent = '릴리스 페이지의 Assets에서 설치 파일을 선택해 주세요.';
     }
@@ -117,7 +147,6 @@ async function loadConfig() {
   } catch {
     select('release-label').textContent = '배포 정보를 불러오지 못했어요';
     select('download-description').textContent = '잠시 후 페이지를 새로고침해 주세요.';
-    document.querySelector('[data-download-caption]').textContent = '배포 정보를 불러오지 못했어요';
     return { sample: false, ready: false, failed: true };
   }
 }
@@ -125,13 +154,13 @@ async function loadConfig() {
 function openLinkedNotice() {
   const hash = window.location.hash.slice(1);
   if (!hash.startsWith('notice-')) return;
+  const index = noticeEntries.findIndex(entry => `notice-${entry.id}` === hash);
+  if (index < 0) return;
+  const page = Math.floor(index / 5) + 1;
+  if (page !== noticePage) renderNoticePage(page);
   const target = document.getElementById(hash);
   if (target instanceof HTMLDetailsElement) { target.open = true; target.scrollIntoView({ block: 'start' }); }
 }
-select('latest-notice').addEventListener('click', () => {
-  const target = document.getElementById(select('latest-notice').hash.slice(1));
-  if (target instanceof HTMLDetailsElement) target.open = true;
-});
 
 const [sampleNotices, samplePatches, site] = await Promise.all([loadNotices(), loadPatches(), loadConfig()]);
 const sampleBanner = select('sample-banner');
