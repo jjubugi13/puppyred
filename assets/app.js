@@ -111,15 +111,17 @@ async function loadPatches() {
     list.replaceChildren();
     if (!entries.length) { state(list, '아직 등록된 패치 내역이 없어요.'); return false; }
     entries.forEach(entry => {
-      const article = element('article', 'patch-entry');
+      const article = element('details', 'patch-entry');
+      const summary = element('summary', 'patch-summary');
       const meta = element('div', 'patch-meta');
       meta.append(dateNode(entry.publishedAt), element('span', '', entry.version));
       const content = element('div', 'patch-content');
-      const title = element('h3', '', entry.title);
+      const title = element('span', 'patch-title', entry.title);
       if (entry.sample) title.append(element('span', 'pill', '샘플 · 실제 패치 아님'));
       const changes = element('ul');
       entry.changes.forEach(change => changes.append(element('li', '', change)));
-      content.append(title, changes); article.append(meta, content); list.append(article);
+      summary.append(title, meta);
+      content.append(changes); article.append(summary, content); list.append(article);
     });
     return entries.some(entry => entry.sample);
   } catch {
