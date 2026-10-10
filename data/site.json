@@ -1,5 +1,5 @@
 {
-  "sample": true,
-  "downloadEnabled": false,
-  "releaseUrl": null
+  "sample": false,
+  "downloadEnabled": true,
+  "releaseUrl": "https://github.com/jjubugi13/puppyred/releases/latest"
 }
