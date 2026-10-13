@@ -3,6 +3,7 @@ import { orderedEntries, releaseURL, koreanDate, paginate } from './content.js';
 const select = id => document.getElementById(id);
 let noticeEntries = [];
 let noticePage = 1;
+const noticePageSize = 7;
 const pageNames = { home: '퍼피레드', download: '다운로드', guide: '설치 및 이용 가이드', before: '이용 전 안내 사항', faq: '설치·접속·실행 오류', patches: '패치 내역' };
 document.body.classList.add('enhanced');
 function showPage() {
@@ -58,7 +59,7 @@ function appendBody(container, text) {
 }
 
 function renderNoticePage(page) {
-  const result = paginate(noticeEntries, page);
+  const result = paginate(noticeEntries, page, noticePageSize);
   noticePage = result.page;
   const list = select('notice-list'); list.replaceChildren();
   if (!result.items.length) state(list, '아직 등록된 공지가 없어요.');
@@ -135,14 +136,14 @@ async function loadConfig() {
     const config = await readJSON('site');
     if (!config || typeof config.sample !== 'boolean' || typeof config.downloadEnabled !== 'boolean') throw new Error('Invalid site config');
     const url = releaseURL(config);
-    select('release-label').textContent = url ? 'GitHub Releases에서 배포 정보 확인' : '배포 준비 중 · 설치 파일 미연결';
+    select('release-label').textContent = url ? '퍼피레드 설치 파일 받기' : '배포 준비 중 · 설치 파일 미연결';
     if (url) {
       document.querySelectorAll('[data-download]').forEach(link => {
         link.href = url;
         link.removeAttribute('aria-disabled');
       });
       select('download-link').textContent = '퍼피레드 다운로드 ↗';
-      select('download-description').textContent = 'GitHub Releases에서 최신 배포 안내와 설치 파일을 확인해 주세요.';
+      select('download-description').textContent = '① 아래 ‘퍼피레드 다운로드’ 버튼을 눌러 주세요.\n② 열린 페이지 아래쪽의 ‘Assets’ 목록에서 PuppyRedSetup.exe를 눌러 주세요.';
     }
     return { sample: config.sample, ready: Boolean(url) };
   } catch {
@@ -157,7 +158,7 @@ function openLinkedNotice() {
   if (!hash.startsWith('notice-')) return;
   const index = noticeEntries.findIndex(entry => `notice-${entry.id}` === hash);
   if (index < 0) return;
-  const page = Math.floor(index / 5) + 1;
+  const page = Math.floor(index / noticePageSize) + 1;
   if (page !== noticePage) renderNoticePage(page);
   const target = document.getElementById(hash);
   if (target instanceof HTMLDetailsElement) { target.open = true; target.scrollIntoView({ block: 'start' }); }
